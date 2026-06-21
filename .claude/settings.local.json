@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"import openpyxl; wb = openpyxl.load_workbook\\('data.xlsx'\\); print\\('Sheets:', wb.sheetnames\\); ws = wb[wb.sheetnames[0]]; print\\('Rows:', ws.max_row, 'Cols:', ws.max_column\\); print\\('First 3 rows:'\\); [print\\([cell.value for cell in row]\\) for row in list\\(ws.iter_rows\\(min_row=1, max_row=3\\)\\)]\")",
+      "Bash(python3 -c \"import pandas; df = pandas.read_excel\\('data.xlsx'\\); print\\(df.head\\(3\\)\\); print\\(df.describe\\(\\)\\)\")",
+      "Bash(pip install *)",
+      "Bash(python3 -c ' *)",
+      "Bash(python3 -m pip install openpyxl --quiet)",
+      "Bash(apt list *)",
+      "Bash(python3 -m ensurepip --user)",
+      "Bash(apt-get install *)",
+      "Bash(python3 *)",
+      "Bash(pip3 install *)",
+      "Bash(curl *)",
+      "Bash(git rm *)",
+      "Bash(mvn compile *)",
+      "Bash(java -version)",
+      "Bash(javac -version)",
+      "Bash(echo \"exit: $?\")",
+      "Read(//mnt/c/Users/arthu/.jdks/**)",
+      "Read(//mnt/c/Users/arthu/AppData/Local/Programs/**)",
+      "Bash(/mnt/c/Users/arthu/.jdks/corretto-17.0.10/bin/java -version)",
+      "Bash(/mnt/c/Users/arthu/.jdks/openjdk-*/bin/java -version)",
+      "Bash(git add *)"
+    ]
+  }
+}
