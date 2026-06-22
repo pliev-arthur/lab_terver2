@@ -1,65 +1,75 @@
 package lab.terver;
 
-/** Задача 10: Гистограмма с наложенной теоретической плотностью (столбец 5). */
+/** Задача 10: Гистограмма с наложенной теоретической плотностью. */
 public class Task10 {
+
     /** Плотность нормального распределения. */
-    static double normPdf(double x, double a, double sigma) {
-        double z = (x - a) / sigma;
-        return Math.exp(-0.5 * z * z) / (sigma * Math.sqrt(2 * Math.PI));
+    static double normalPdf(double x, double mean, double stdDev) {
+        double z = (x - mean) / stdDev;
+        return Math.exp(-0.5 * z * z) / (stdDev * Math.sqrt(2 * Math.PI));
     }
 
     public static void main(String[] args) throws Exception {
-        double[] data = DataReader.readColumn("data.xlsx", "Лист1", 4);
-
-        int n = data.length;
+        double[] data = DataReader.selectColumnForAnalysis("data.xlsx", "Лист1");
+        int sampleSize = data.length;
 
         double sum = 0;
         for (double x : data) sum += x;
-        double xBar = sum / n;
+        double sampleMean = sum / sampleSize;
 
-        double ssq = 0;
-        for (double x : data) ssq += (x - xBar) * (x - xBar);
-        double s2 = ssq / (n - 1);
-        double s = Math.sqrt(s2);
+        double sumSquaredDiffs = 0;
+        for (double x : data) {
+            sumSquaredDiffs += (x - sampleMean) * (x - sampleMean);
+        }
+        double sampleVariance = sumSquaredDiffs / (sampleSize - 1);
+        double sampleStdDev = Math.sqrt(sampleVariance);
 
         // Гистограмма
-        int k = 9;
-        double xMin = Double.MAX_VALUE, xMax = Double.MIN_VALUE;
+        int binCount = 9;
+        double minValue = Double.MAX_VALUE;
+        double maxValue = Double.MIN_VALUE;
         for (double x : data) {
-            if (x < xMin) xMin = x;
-            if (x > xMax) xMax = x;
+            if (x < minValue) minValue = x;
+            if (x > maxValue) maxValue = x;
         }
-        double h = (xMax - xMin) / k;
-        int[] counts = new int[k];
+        double binWidth = (maxValue - minValue) / binCount;
+        int[] frequencies = new int[binCount];
         for (double x : data) {
-            int idx = Math.min((int) ((x - xMin) / h), k - 1);
-            counts[idx]++;
+            int binIndex = Math.min((int) ((x - minValue) / binWidth), binCount - 1);
+            frequencies[binIndex]++;
         }
 
         System.out.println("Гистограмма и теоретическая плотность:");
-        System.out.printf("%-22s %8s %8s %8s%n", "Интервал", "h_гист", "h_теор", "f(серед)");
+        System.out.printf("%-22s %8s %8s %8s%n",
+                "Интервал", "h_гист", "h_теор", "f(серед)");
         System.out.println("-".repeat(46));
-        for (int i = 0; i < k; i++) {
-            double lo = xMin + i * h;
-            double hi = lo + h;
-            double mid = (lo + hi) / 2;
-            double hHist = counts[i] / (n * h);
-            double fTheory = normPdf(mid, xBar, s);
+        for (int i = 0; i < binCount; i++) {
+            double lowerBound = minValue + i * binWidth;
+            double upperBound = lowerBound + binWidth;
+            double midpoint = (lowerBound + upperBound) / 2;
+            double histogramDensity = frequencies[i] / (sampleSize * binWidth);
+            double theoreticalDensity = normalPdf(midpoint, sampleMean, sampleStdDev);
             StringBuilder bar = new StringBuilder();
-            for (int j = 0; j < (int) (hHist * 200); j++) bar.append('█');
-            System.out.printf("[%7.2f, %7.2f)  %8.4f  %8.4f  %s%n", lo, hi, hHist, fTheory, bar);
+            for (int j = 0; j < (int) (histogramDensity * 200); j++) {
+                bar.append('█');
+            }
+            System.out.printf("[%7.2f, %7.2f)  %8.4f  %8.4f  %s%n",
+                    lowerBound, upperBound, histogramDensity, theoreticalDensity, bar);
         }
 
         // Сравнение частот: наблюдаемые vs ожидаемые
         System.out.printf("%nСравнение наблюдаемых и ожидаемых частот:%n");
-        System.out.printf("%-22s %8s %8s %8s%n", "Интервал", "Obs n_i", "Exp n_i", "Diff");
-        for (int i = 0; i < k; i++) {
-            double lo = xMin + i * h;
-            double hi = lo + h;
-            double mid = (lo + hi) / 2;
-            double expN = n * h * normPdf(mid, xBar, s);
+        System.out.printf("%-22s %8s %8s %8s%n",
+                "Интервал", "Obs n_i", "Exp n_i", "Diff");
+        for (int i = 0; i < binCount; i++) {
+            double lowerBound = minValue + i * binWidth;
+            double upperBound = lowerBound + binWidth;
+            double midpoint = (lowerBound + upperBound) / 2;
+            double expectedCount = sampleSize * binWidth
+                    * normalPdf(midpoint, sampleMean, sampleStdDev);
             System.out.printf("[%7.2f, %7.2f)  %8d  %8.1f  %8.1f%n",
-                              lo, hi, counts[i], expN, counts[i] - expN);
+                    lowerBound, upperBound, frequencies[i], expectedCount,
+                    frequencies[i] - expectedCount);
         }
     }
 }
